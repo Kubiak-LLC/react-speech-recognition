@@ -8,8 +8,8 @@ export const appendTrancript = (interimTranscript, finalTranscript) => {
   return {
     type: APPEND_TRANSCRIPT,
     payload: {
-      interimTranscript: "Half potato",
-      finalTranscript: "full potato"
+      interimTranscript,
+      finalTranscript
     }
   }
 }

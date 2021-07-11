@@ -162,8 +162,8 @@ const useSpeechRecognition = ({
   const transcript = concatTranscripts(finalTranscript, interimTranscript)
   return {
     transcript,
-    interimTranscript: "half potato test",
-    finalTranscript: "potato test",
+    interimTranscript,
+    finalTranscript,
     fullResults,
     listening,
     resetTranscript,
