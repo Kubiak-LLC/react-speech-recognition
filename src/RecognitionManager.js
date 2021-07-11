@@ -1,163 +1,182 @@
-import isAndroid from './isAndroid'
-import { debounce, concatTranscripts, browserSupportsPolyfills } from './utils'
-import { isNative } from './NativeSpeechRecognition'
+import isAndroid from "./isAndroid";
+import { debounce, concatTranscripts, browserSupportsPolyfills } from "./utils";
+import { isNative } from "./NativeSpeechRecognition";
 
 export default class RecognitionManager {
   constructor(SpeechRecognition) {
-    this.recognition = null
-    this.pauseAfterDisconnect = false
-    this.interimTranscript = ''
-    this.finalTranscript = ''
-    this.listening = false
-    this.fullResults = {}
-    this.subscribers = {}
-    this.onStopListening = () => {}
-    this.previousResultWasFinalOnly = false
+    this.recognition = null;
+    this.pauseAfterDisconnect = false;
+    this.interimTranscript = "";
+    this.finalTranscript = "";
+    this.listening = false;
+    this.fullResults = {};
+    this.subscribers = {};
+    this.onStopListening = () => {};
+    this.previousResultWasFinalOnly = false;
 
-    this.resetTranscript = this.resetTranscript.bind(this)
-    this.startListening = this.startListening.bind(this)
-    this.stopListening = this.stopListening.bind(this)
-    this.abortListening = this.abortListening.bind(this)
-    this.setSpeechRecognition = this.setSpeechRecognition.bind(this)
+    this.resetTranscript = this.resetTranscript.bind(this);
+    this.startListening = this.startListening.bind(this);
+    this.stopListening = this.stopListening.bind(this);
+    this.abortListening = this.abortListening.bind(this);
+    this.setSpeechRecognition = this.setSpeechRecognition.bind(this);
 
-    this.setSpeechRecognition(SpeechRecognition)
+    this.setSpeechRecognition(SpeechRecognition);
 
     if (isAndroid()) {
-      this.updateFinalTranscript = debounce(this.updateFinalTranscript, 250, true)
+      this.updateFinalTranscript = debounce(
+        this.updateFinalTranscript,
+        250,
+        true
+      );
     }
   }
 
   setSpeechRecognition(SpeechRecognition) {
-    const browserSupportsRecogniser = !!SpeechRecognition && (
-      isNative(SpeechRecognition) || browserSupportsPolyfills()
-    )
+    const browserSupportsRecogniser =
+      !!SpeechRecognition &&
+      (isNative(SpeechRecognition) || browserSupportsPolyfills());
     if (browserSupportsRecogniser) {
       if (this.recognition) {
-        this.recognition.onresult = () => {}
-        this.recognition.onend = () => {}
+        this.recognition.onresult = () => {};
+        this.recognition.onend = () => {};
         if (this.listening) {
-          this.stopListening()
+          this.stopListening();
         }
       }
-      this.recognition = new SpeechRecognition()
-      this.recognition.continuous = false
-      this.recognition.interimResults = true
-      this.recognition.onresult = this.updateTranscript.bind(this)
-      this.recognition.onend = this.onRecognitionDisconnect.bind(this)
+      this.recognition = new SpeechRecognition();
+      this.recognition.continuous = false;
+      this.recognition.interimResults = true;
+      this.recognition.onresult = this.updateTranscript.bind(this);
+      this.recognition.onend = this.onRecognitionDisconnect.bind(this);
     }
-    this.emitBrowserSupportsSpeechRecognitionChange(browserSupportsRecogniser)
+    this.emitBrowserSupportsSpeechRecognitionChange(browserSupportsRecogniser);
   }
 
   subscribe(id, callbacks) {
-    this.subscribers[id] = callbacks
+    this.subscribers[id] = callbacks;
   }
 
   unsubscribe(id) {
-    delete this.subscribers[id]
+    delete this.subscribers[id];
   }
 
   emitListeningChange(listening) {
-    this.listening = listening
+    this.listening = listening;
     Object.keys(this.subscribers).forEach((id) => {
-      const { onListeningChange } = this.subscribers[id]
-      onListeningChange(listening)
-    })
+      const { onListeningChange } = this.subscribers[id];
+      onListeningChange(listening);
+    });
   }
 
   emitTranscriptChange(interimTranscript, finalTranscript) {
     Object.keys(this.subscribers).forEach((id) => {
-      const { onTranscriptChange } = this.subscribers[id]
-      onTranscriptChange(interimTranscript, finalTranscript)
-    })
+      const { onTranscriptChange } = this.subscribers[id];
+      onTranscriptChange(interimTranscript, finalTranscript);
+    });
   }
 
   emitResultsChange(fullResults) {
     Object.keys(this.subscribers).forEach((id) => {
-      const { onResultsChange } = this.subscribers[id]
-      onResultsChange(fullResults)
-    })
+      const { onResultsChange } = this.subscribers[id];
+      onResultsChange(fullResults);
+    });
   }
 
   emitClearTranscript() {
     Object.keys(this.subscribers).forEach((id) => {
-      const { onClearTranscript } = this.subscribers[id]
-      onClearTranscript()
-    })
+      const { onClearTranscript } = this.subscribers[id];
+      onClearTranscript();
+    });
   }
 
-  emitBrowserSupportsSpeechRecognitionChange(browserSupportsSpeechRecognitionChange) {
+  emitBrowserSupportsSpeechRecognitionChange(
+    browserSupportsSpeechRecognitionChange
+  ) {
     Object.keys(this.subscribers).forEach((id) => {
-      const { onBrowserSupportsSpeechRecognitionChange, onBrowserSupportsContinuousListeningChange } = this.subscribers[id]
-      onBrowserSupportsSpeechRecognitionChange(browserSupportsSpeechRecognitionChange)
-      onBrowserSupportsContinuousListeningChange(browserSupportsSpeechRecognitionChange)
-    })
+      const {
+        onBrowserSupportsSpeechRecognitionChange,
+        onBrowserSupportsContinuousListeningChange,
+      } = this.subscribers[id];
+      onBrowserSupportsSpeechRecognitionChange(
+        browserSupportsSpeechRecognitionChange
+      );
+      onBrowserSupportsContinuousListeningChange(
+        browserSupportsSpeechRecognitionChange
+      );
+    });
   }
 
   disconnect(disconnectType) {
     if (this.recognition && this.listening) {
       switch (disconnectType) {
-        case 'ABORT':
-          this.pauseAfterDisconnect = true
-          this.abort()
-          break
-        case 'RESET':
-          this.pauseAfterDisconnect = false
-          this.abort()
-          break
-        case 'STOP':
+        case "ABORT":
+          this.pauseAfterDisconnect = true;
+          this.abort();
+          break;
+        case "RESET":
+          this.pauseAfterDisconnect = false;
+          this.abort();
+          break;
+        case "STOP":
         default:
-          this.pauseAfterDisconnect = true
-          this.stop()
+          this.pauseAfterDisconnect = true;
+          this.stop();
       }
     }
   }
 
   onRecognitionDisconnect() {
-    this.onStopListening()
-    this.listening = false
+    this.onStopListening();
+    this.listening = false;
     if (this.pauseAfterDisconnect) {
-      this.emitListeningChange(false)
+      this.emitListeningChange(false);
     } else if (this.recognition) {
       if (this.recognition.continuous) {
-        this.startListening({ continuous: this.recognition.continuous })
+        this.startListening({ continuous: this.recognition.continuous });
       } else {
-        this.emitListeningChange(false)
+        this.emitListeningChange(false);
       }
     }
-    this.pauseAfterDisconnect = false
+    this.pauseAfterDisconnect = false;
   }
 
   updateTranscript({ results, resultIndex }) {
-    console.log(`updateTranscript: \n${JSON.stringify(results)}`);
-    const currentIndex = resultIndex === undefined ? results.length - 1 : resultIndex
-    this.interimTranscript = ''
-    this.finalTranscript = ''
+    const currentIndex =
+      resultIndex === undefined ? results.length - 1 : resultIndex;
+    this.interimTranscript = "";
+    this.finalTranscript = "";
     for (let i = currentIndex; i < results.length; ++i) {
       console.log(`loop ${i}: \n${JSON.stringify(results[i])}`);
-      if (results[i].isFinal && (!isAndroid() || results[i][0].confidence > 0)) {
-        this.updateFinalTranscript(results[i][0].transcript)
-        
+      if (
+        results[i].isFinal &&
+        (!isAndroid() || results[i][0].confidence > 0)
+      ) {
+        console.log(`updateFinalTranscript ${i}: \n${JSON.stringify(results[i][0])}`);
+        console.log(`updateFinalTranscript ${i}: \n${JSON.stringify(results[i][0].transcript)}`);
+        this.updateFinalTranscript(results[i][0].transcript);
       } else {
+        console.log(`interimTranscript ${i}: \n${JSON.stringify(results[i][0])}`);
+        console.log(`interimTranscript ${i}: \n${JSON.stringify(results[i][0].transcript)}`);
         this.interimTranscript = concatTranscripts(
           this.interimTranscript,
           results[i][0].transcript
-        )
+        );
 
-        this.updateResults(results)
+        this.updateResults(results);
       }
     }
-    let isDuplicateResult = false
-    if (this.interimTranscript === '' && this.finalTranscript !== '') {
+    let isDuplicateResult = false;
+    if (this.interimTranscript === "" && this.finalTranscript !== "") {
       if (this.previousResultWasFinalOnly) {
-        isDuplicateResult = true
+        isDuplicateResult = true;
       }
-      this.previousResultWasFinalOnly = true
+      this.previousResultWasFinalOnly = true;
     } else {
-      this.previousResultWasFinalOnly = false
+      this.previousResultWasFinalOnly = false;
     }
     if (!isDuplicateResult) {
-      this.emitTranscriptChange(this.interimTranscript, this.finalTranscript)
-      this.emitResultsChange(this.fullResults)
+      this.emitTranscriptChange(this.interimTranscript, this.finalTranscript);
+      this.emitResultsChange(this.fullResults);
     }
   }
 
@@ -165,84 +184,87 @@ export default class RecognitionManager {
     this.finalTranscript = concatTranscripts(
       this.finalTranscript,
       newFinalTranscript
-    )
+    );
   }
 
   updateResults(results) {
-    console.log(`Updating Results: \n${JSON.stringify(results)}`);
     this.fullResults = JSON.parse(JSON.stringify(results));
   }
 
   resetTranscript() {
-    this.disconnect('RESET')
+    this.disconnect("RESET");
   }
 
   async startListening({ continuous = false, language } = {}) {
     if (!this.recognition) {
-      return
+      return;
     }
 
-    const isContinuousChanged = continuous !== this.recognition.continuous
-    const isLanguageChanged = language && language !== this.recognition.lang
+    const isContinuousChanged = continuous !== this.recognition.continuous;
+    const isLanguageChanged = language && language !== this.recognition.lang;
     if (isContinuousChanged || isLanguageChanged) {
       if (this.listening) {
-        await this.stopListening()
+        await this.stopListening();
       }
-      this.recognition.continuous = isContinuousChanged ? continuous : this.recognition.continuous
-      this.recognition.lang = isLanguageChanged ? language : this.recognition.lang
+      this.recognition.continuous = isContinuousChanged
+        ? continuous
+        : this.recognition.continuous;
+      this.recognition.lang = isLanguageChanged
+        ? language
+        : this.recognition.lang;
     }
     if (!this.listening) {
       if (!this.recognition.continuous) {
-        this.resetTranscript()
-        this.emitClearTranscript()
+        this.resetTranscript();
+        this.emitClearTranscript();
       }
       try {
-        this.start()
+        this.start();
       } catch (DOMException) {
         // Tried to start recognition after it has already started - safe to swallow this error
       }
-      this.emitListeningChange(true)
+      this.emitListeningChange(true);
     }
   }
 
   async abortListening() {
-    this.disconnect('ABORT')
-    this.emitListeningChange(false)
-    await new Promise(resolve => {
-      this.onStopListening = resolve
-    })
+    this.disconnect("ABORT");
+    this.emitListeningChange(false);
+    await new Promise((resolve) => {
+      this.onStopListening = resolve;
+    });
   }
 
   async stopListening() {
-    this.disconnect('STOP')
-    this.emitListeningChange(false)
-    await new Promise(resolve => {
-      this.onStopListening = resolve
-    })
+    this.disconnect("STOP");
+    this.emitListeningChange(false);
+    await new Promise((resolve) => {
+      this.onStopListening = resolve;
+    });
   }
 
   getRecognition() {
-    return this.recognition
+    return this.recognition;
   }
 
   start() {
     if (this.recognition && !this.listening) {
-      this.recognition.start()
-      this.listening = true
+      this.recognition.start();
+      this.listening = true;
     }
   }
 
   stop() {
     if (this.recognition && this.listening) {
-      this.recognition.stop()
-      this.listening = false
+      this.recognition.stop();
+      this.listening = false;
     }
   }
 
   abort() {
     if (this.recognition && this.listening) {
-      this.recognition.abort()
-      this.listening = false
+      this.recognition.abort();
+      this.listening = false;
     }
   }
 }
