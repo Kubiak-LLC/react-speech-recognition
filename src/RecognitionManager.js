@@ -46,6 +46,7 @@ export default class RecognitionManager {
       this.recognition = new SpeechRecognition();
       this.recognition.continuous = false;
       this.recognition.interimResults = true;
+      this.recognition.maxAlternatives = 3;
       this.recognition.onresult = this.updateTranscript.bind(this);
       this.recognition.onend = this.onRecognitionDisconnect.bind(this);
     }
