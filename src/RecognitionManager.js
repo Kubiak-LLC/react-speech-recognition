@@ -128,7 +128,6 @@ export default class RecognitionManager {
   }
 
   updateTranscript({ results, resultIndex }) {
-    console.log(`updateTranscript: \n ${results}`);
     const currentIndex = resultIndex === undefined ? results.length - 1 : resultIndex
     this.interimTranscript = ''
     this.finalTranscript = ''
@@ -154,7 +153,6 @@ export default class RecognitionManager {
     }
     if (!isDuplicateResult) {
       this.emitTranscriptChange(this.interimTranscript, this.finalTranscript)
-      console.log(`Emitting Results: \n ${this.fullResults}`);
       this.emitResultsChange(this.fullResults)
     }
   }
@@ -167,7 +165,6 @@ export default class RecognitionManager {
   }
 
   updateResults(results) {
-    console.log(`Update Result: \n ${results}`);
     this.fullResults = results;
   }
 

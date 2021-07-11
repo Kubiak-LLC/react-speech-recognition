@@ -156,7 +156,6 @@ const useSpeechRecognition = ({
     clearTranscriptOnListen,
     recognitionManager,
     handleTranscriptChange,
-    handleResultsChange,
     handleClearTranscript
   ])
 
