@@ -9,7 +9,7 @@ export default class RecognitionManager {
     this.interimTranscript = ''
     this.finalTranscript = ''
     this.listening = false
-    this.fullResults = []
+    this.fullResults = {}
     this.subscribers = {}
     this.onStopListening = () => {}
     this.previousResultWasFinalOnly = false
@@ -133,6 +133,7 @@ export default class RecognitionManager {
     this.interimTranscript = ''
     this.finalTranscript = ''
     for (let i = currentIndex; i < results.length; ++i) {
+      console.log(`loop ${i}: \n${JSON.stringify(results[i])}`);
       if (results[i].isFinal && (!isAndroid() || results[i][0].confidence > 0)) {
         this.updateFinalTranscript(results[i][0].transcript)
         
