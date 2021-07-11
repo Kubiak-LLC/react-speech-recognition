@@ -165,7 +165,7 @@ export default class RecognitionManager {
   }
 
   updateResults(results) {
-    this.fullResults = this.fullResults.concat(results);
+    this.fullResults = JSON.parse(JSON.stringify(results));
   }
 
   resetTranscript() {
