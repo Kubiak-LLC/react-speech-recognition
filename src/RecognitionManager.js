@@ -128,6 +128,7 @@ export default class RecognitionManager {
   }
 
   updateTranscript({ results, resultIndex }) {
+    console.log(`updateTranscript: \n${JSON.stringify(results)}`);
     const currentIndex = resultIndex === undefined ? results.length - 1 : resultIndex
     this.interimTranscript = ''
     this.finalTranscript = ''
