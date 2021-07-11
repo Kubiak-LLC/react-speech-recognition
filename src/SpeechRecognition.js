@@ -121,11 +121,11 @@ const useSpeechRecognition = ({
     }, [matchCommands, transcribing]
   )
   
-  const handleResultsChange = useCallback(
-    (newResults) => {
-      dispatch(newResults)
-    }, [fullResults]
-  )
+  // const handleResultsChange = useCallback(
+  //   (newResults) => {
+  //     dispatch(newResults)
+  //   }, [fullResults]
+  // )
 
   const handleClearTranscript = useCallback(
     () => {
@@ -141,7 +141,7 @@ const useSpeechRecognition = ({
     const callbacks = {
       onListeningChange: setListening,
       onTranscriptChange: handleTranscriptChange,
-      onResultsChange: handleResultsChange,
+      onResultsChange: setFullResults,
       onClearTranscript: handleClearTranscript,
       onBrowserSupportsSpeechRecognitionChange: setBrowserSupportsSpeechRecognition,
       onBrowserSupportsContinuousListeningChange: setBrowserSupportsContinuousListening
