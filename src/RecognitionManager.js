@@ -165,6 +165,7 @@ export default class RecognitionManager {
   }
 
   updateResults(results) {
+    console.log(`Updating Results: \n${JSON.stringify(results)}`);
     this.fullResults = JSON.parse(JSON.stringify(results));
   }
 
