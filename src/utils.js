@@ -15,7 +15,7 @@ const debounce = (func, wait, immediate) => {
 }
 
 const concatTranscripts = (...transcriptParts) => {
-  return transcriptParts.map(t => t.trim()).join(' ').trim()
+  return transcriptParts.map(t => t.trim()).join('_').trim()
 }
 
 // The command matching code is a modified version of Backbone.Router by Jeremy Ashkenas, under the MIT license.
