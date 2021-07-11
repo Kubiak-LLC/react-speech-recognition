@@ -38,7 +38,7 @@ export function useSpeechRecognition(
     transcript: string;
     interimTranscript: string;
     finalTranscript: string;
-    fullResults: any []
+    fullResults: SpeechRecognitionResultList
     listening: boolean;
     resetTranscript: () => void;
 };

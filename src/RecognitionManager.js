@@ -146,23 +146,17 @@ export default class RecognitionManager {
     this.interimTranscript = "";
     this.finalTranscript = "";
     for (let i = currentIndex; i < results.length; ++i) {
-      console.log(`loop ${i}: \n${JSON.stringify(results[i])}`);
       if (
         results[i].isFinal &&
         (!isAndroid() || results[i][0].confidence > 0)
       ) {
-        console.log(`updateFinalTranscript ${i}: \n${JSON.stringify(results[i][0])}`);
-        console.log(`updateFinalTranscript ${i}: \n${JSON.stringify(results[i][0].transcript)}`);
         this.updateFinalTranscript(results[i][0].transcript);
+        this.updateResults(results);
       } else {
-        console.log(`interimTranscript ${i}: \n${JSON.stringify(results[i][0])}`);
-        console.log(`interimTranscript ${i}: \n${JSON.stringify(results[i][0].transcript)}`);
         this.interimTranscript = concatTranscripts(
           this.interimTranscript,
           results[i][0].transcript
         );
-
-        this.updateResults(results);
       }
     }
     let isDuplicateResult = false;
@@ -188,7 +182,7 @@ export default class RecognitionManager {
   }
 
   updateResults(results) {
-    this.fullResults = JSON.parse(JSON.stringify(results));
+  this.fullResults = results;
   }
 
   resetTranscript() {
