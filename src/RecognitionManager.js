@@ -134,12 +134,14 @@ export default class RecognitionManager {
     for (let i = currentIndex; i < results.length; ++i) {
       if (results[i].isFinal && (!isAndroid() || results[i][0].confidence > 0)) {
         this.updateFinalTranscript(results[i][0].transcript)
-        this.updateResults(results)
+        
       } else {
         this.interimTranscript = concatTranscripts(
           this.interimTranscript,
           results[i][0].transcript
         )
+
+        this.updateResults(results)
       }
     }
     let isDuplicateResult = false
