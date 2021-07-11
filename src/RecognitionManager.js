@@ -70,6 +70,13 @@ export default class RecognitionManager {
     })
   }
 
+  emitResultsChange(results) {
+    Object.keys(this.subscribers).forEach((id) => {
+      const { onResultsChange } = this.subscribers[id]
+      onResultsChange(results)
+    })
+  }
+
   emitClearTranscript() {
     Object.keys(this.subscribers).forEach((id) => {
       const { onClearTranscript } = this.subscribers[id]
@@ -126,6 +133,7 @@ export default class RecognitionManager {
     for (let i = currentIndex; i < results.length; ++i) {
       if (results[i].isFinal && (!isAndroid() || results[i][0].confidence > 0)) {
         this.updateFinalTranscript(results[i][0].transcript)
+        this.updateResults(results)
       } else {
         this.interimTranscript = concatTranscripts(
           this.interimTranscript,
@@ -144,6 +152,7 @@ export default class RecognitionManager {
     }
     if (!isDuplicateResult) {
       this.emitTranscriptChange(this.interimTranscript, this.finalTranscript)
+      this.emitResultsChange(this.results)
     }
   }
 
@@ -152,6 +161,10 @@ export default class RecognitionManager {
       this.finalTranscript,
       newFinalTranscript
     )
+  }
+
+  updateResults(results) {
+    this.results = results;
   }
 
   resetTranscript() {
