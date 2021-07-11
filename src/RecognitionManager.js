@@ -9,6 +9,7 @@ export default class RecognitionManager {
     this.interimTranscript = ''
     this.finalTranscript = ''
     this.listening = false
+    this.fullResults = []
     this.subscribers = {}
     this.onStopListening = () => {}
     this.previousResultWasFinalOnly = false
@@ -70,10 +71,10 @@ export default class RecognitionManager {
     })
   }
 
-  emitResultsChange(results) {
+  emitResultsChange(fullResults) {
     Object.keys(this.subscribers).forEach((id) => {
       const { onResultsChange } = this.subscribers[id]
-      onResultsChange(results)
+      onResultsChange(fullResults)
     })
   }
 
@@ -152,7 +153,7 @@ export default class RecognitionManager {
     }
     if (!isDuplicateResult) {
       this.emitTranscriptChange(this.interimTranscript, this.finalTranscript)
-      this.emitResultsChange(this.results)
+      this.emitResultsChange(this.fullResults)
     }
   }
 
@@ -164,7 +165,7 @@ export default class RecognitionManager {
   }
 
   updateResults(results) {
-    this.results = results;
+    this.fullResults = results;
   }
 
   resetTranscript() {

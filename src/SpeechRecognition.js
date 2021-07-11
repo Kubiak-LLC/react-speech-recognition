@@ -30,6 +30,7 @@ const useSpeechRecognition = ({
     finalTranscript: ''
   })
   const [listening, setListening] = useState(recognitionManager.listening)
+  const [fullResults, setFullResults] = useStaet(recognitionManager.results)
   const commandsRef = useRef(commands)
   commandsRef.current = commands
 
@@ -164,6 +165,7 @@ const useSpeechRecognition = ({
     transcript,
     interimTranscript,
     finalTranscript,
+    fullResults,
     listening,
     resetTranscript,
     browserSupportsSpeechRecognition,
