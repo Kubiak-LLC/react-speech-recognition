@@ -124,7 +124,7 @@ const useSpeechRecognition = ({
   const handleResultsChange = useCallback(
     (newResults) => {
       dispatch(newResults)
-    }, [newResults]
+    }, [fullResults]
   )
 
   const handleClearTranscript = useCallback(
